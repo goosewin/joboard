@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
-import { Play, Square, Volume2, VolumeX } from "lucide-react"
+import { Play, Repeat, Square, Volume2, VolumeX } from "lucide-react"
 import * as React from "react"
 
 interface SoundButtonProps {
@@ -24,10 +24,6 @@ export function SoundButton({ name, path }: SoundButtonProps) {
       setError(null)
     }
 
-    const handleEnded = () => {
-      setIsPlaying(false)
-    }
-
     const handleError = (e: Event) => {
       const target = e.target as HTMLAudioElement
       console.error('Audio error:', target.error)
@@ -37,9 +33,10 @@ export function SoundButton({ name, path }: SoundButtonProps) {
     }
 
     audio.addEventListener('canplaythrough', handleCanPlayThrough)
-    audio.addEventListener('ended', handleEnded)
     audio.addEventListener('error', handleError)
 
+    // Set up looping
+    audio.loop = true
     audio.src = path
     audio.volume = isMuted ? 0 : volume
     audio.preload = 'auto'
@@ -47,7 +44,6 @@ export function SoundButton({ name, path }: SoundButtonProps) {
 
     return () => {
       audio.removeEventListener('canplaythrough', handleCanPlayThrough)
-      audio.removeEventListener('ended', handleEnded)
       audio.removeEventListener('error', handleError)
       audio.pause()
       audio.src = ''
@@ -61,9 +57,6 @@ export function SoundButton({ name, path }: SoundButtonProps) {
     try {
       setIsLoading(true)
       setError(null)
-      if (isPlaying) {
-        audioRef.current.currentTime = 0
-      }
       await audioRef.current.play()
       setIsPlaying(true)
     } catch (error) {
@@ -108,11 +101,7 @@ export function SoundButton({ name, path }: SoundButtonProps) {
       <Button
         variant={isPlaying ? "default" : error ? "destructive" : "secondary"}
         size="lg"
-        onClick={play}
-        onContextMenu={(e) => {
-          e.preventDefault()
-          stop()
-        }}
+        onClick={isPlaying ? stop : play}
         disabled={isLoading}
         className="w-full font-medium tracking-wide transition-all duration-300 flex items-center gap-2"
       >
@@ -123,7 +112,8 @@ export function SoundButton({ name, path }: SoundButtonProps) {
         ) : (
           <>
             {isPlaying ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            <span>{formattedName}</span>
+            <span className="flex-1">{formattedName}</span>
+            {isPlaying && <Repeat className="h-4 w-4 animate-spin" />}
           </>
         )}
       </Button>
