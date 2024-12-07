@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
-import { Volume2, VolumeX } from "lucide-react"
+import { Play, Square, Volume2, VolumeX } from "lucide-react"
 import * as React from "react"
 
 interface SoundButtonProps {
@@ -9,7 +9,7 @@ interface SoundButtonProps {
 }
 
 export function SoundButton({ name, path }: SoundButtonProps) {
-  const [volume, setVolume] = React.useState(0.5)
+  const [volume, setVolume] = React.useState(1)
   const [isMuted, setIsMuted] = React.useState(false)
   const [isPlaying, setIsPlaying] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
@@ -97,6 +97,12 @@ export function SoundButton({ name, path }: SoundButtonProps) {
     }
   }
 
+  const formattedName = name
+    .replace(/-/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+
   return (
     <div className="group relative flex flex-col gap-3 p-4 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 hover:bg-card/80 hover:border-primary/20 transition-all duration-300">
       <Button
@@ -108,9 +114,18 @@ export function SoundButton({ name, path }: SoundButtonProps) {
           stop()
         }}
         disabled={isLoading}
-        className="w-full font-medium tracking-wide transition-all duration-300"
+        className="w-full font-medium tracking-wide transition-all duration-300 flex items-center gap-2"
       >
-        {isLoading ? "Loading..." : error ? "Error" : name}
+        {isLoading ? (
+          <span className="animate-pulse">Loading...</span>
+        ) : error ? (
+          "Error"
+        ) : (
+          <>
+            {isPlaying ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            <span>{formattedName}</span>
+          </>
+        )}
       </Button>
 
       <div className="flex items-center gap-2">
